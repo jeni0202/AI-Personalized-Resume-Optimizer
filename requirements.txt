@@ -1,0 +1,10 @@
+streamlit
+spacy
+nltk
+sentence-transformers
+PyPDF2
+python-docx
+scikit-learn
+matplotlib
+plotly
+seaborn
