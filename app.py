@@ -7,13 +7,20 @@ import tempfile
 import os
 import sys
 
-# Add current directory to Python path to ensure imports work in deployment
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Add current directory and parent directory to Python path to ensure imports work in deployment
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, current_dir)
+sys.path.insert(0, os.path.dirname(current_dir))
 
-# Import our custom modules
-from parsers.document_parser import DocumentParser
-from nlp.skill_extractor import SkillExtractor
-from comparison.similarity_comparator import SimilarityComparator
+# Import our custom modules with error handling
+try:
+    from parsers.document_parser import DocumentParser
+    from nlp.skill_extractor import SkillExtractor
+    from comparison.similarity_comparator import SimilarityComparator
+except ImportError as e:
+    st.error(f"❌ Import Error: {str(e)}")
+    st.error("Please ensure all required modules are properly installed and the project structure is correct.")
+    st.stop()
 
 # Set page configuration
 st.set_page_config(
@@ -361,3 +368,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
