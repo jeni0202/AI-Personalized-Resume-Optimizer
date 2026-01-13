@@ -1,1 +1,1 @@
-from .skill_extractor import SkillExtractor
+from .document_parser import DocumentParser
