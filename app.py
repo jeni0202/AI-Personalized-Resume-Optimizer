@@ -7,21 +7,41 @@ import tempfile
 import os
 import sys
 
-# Add current directory and parent directory to Python path to ensure imports work in deployment
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, current_dir)
-sys.path.insert(0, os.path.dirname(current_dir))
+# Add current directory to Python path to ensure imports work in deployment
+import importlib.util
 
-# Import our custom modules with error handling
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
+# Import our custom modules with robust error handling
 try:
+    # Try direct imports first
     from parsers.document_parser import DocumentParser
     from nlp.skill_extractor import SkillExtractor
     from comparison.similarity_comparator import SimilarityComparator
-except ImportError as e:
-    st.error(f"❌ Import Error: {str(e)}")
-    st.error("Please ensure all required modules are properly installed and the project structure is correct.")
-    st.stop()
+except ImportError:
+    try:
+        # Fallback: try importing using importlib
+        spec1 = importlib.util.spec_from_file_location("DocumentParser", os.path.join(current_dir, "parsers", "document_parser.py"))
+        doc_parser = importlib.util.module_from_spec(spec1)
+        spec1.loader.exec_module(doc_parser)
+        DocumentParser = doc_parser.DocumentParser
 
+        spec2 = importlib.util.spec_from_file_location("SkillExtractor", os.path.join(current_dir, "nlp", "skill_extractor.py"))
+        skill_ext = importlib.util.module_from_spec(spec2)
+        spec2.loader.exec_module(skill_ext)
+        SkillExtractor = skill_ext.SkillExtractor
+
+        spec3 = importlib.util.spec_from_file_location("SimilarityComparator", os.path.join(current_dir, "comparison", "similarity_comparator.py"))
+        sim_comp = importlib.util.module_from_spec(spec3)
+        spec3.loader.exec_module(sim_comp)
+        SimilarityComparator = sim_comp.SimilarityComparator
+    except Exception as e:
+        st.error(f"❌ Import Error: {str(e)}")
+        st.error("Failed to import required modules. Please check the project structure and dependencies.")
+        st.stop()
+    
 # Set page configuration
 st.set_page_config(
     page_title="AI Resume Optimizer",
@@ -368,4 +388,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
